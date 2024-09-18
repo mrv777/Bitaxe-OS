@@ -15,6 +15,15 @@ const Dashboard: React.FC = () => {
   const [apiUrl, setApiUrl] = useState<string | null>(null);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
+  useEffect(() => {
+    const savedApiUrl = localStorage.getItem('bitaxeApiUrl');
+    if (savedApiUrl) {
+      setApiUrl(savedApiUrl);
+    } else {
+      setIsFirstLoad(false); // Add this line
+    }
+  }, []);
+
   const { data, isLoading, error, refetch } = useQuery<DashboardData>({
     queryKey: ["allStatus"],
     queryFn: () => api.getAllStatus(),
@@ -22,13 +31,6 @@ const Dashboard: React.FC = () => {
     enabled: !!apiUrl,
     onSettled: () => setIsFirstLoad(false),
   });
-
-  useEffect(() => {
-    const savedApiUrl = localStorage.getItem('bitaxeApiUrl');
-    if (savedApiUrl) {
-      setApiUrl(savedApiUrl);
-    }
-  }, []);
 
   const handleApiUrlSubmit = () => {
     setApiUrl(localStorage.getItem('bitaxeApiUrl'));
