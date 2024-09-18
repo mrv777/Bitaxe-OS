@@ -51,7 +51,6 @@ const SwarmDashboard: React.FC = () => {
     if (validQueries.length > 0) {
       const combined = validQueries.reduce(
         (acc, query) => ({
-          ...acc,
           hashRate: acc.hashRate + query.data.hashRate,
           bestDiff: Math.max(acc.bestDiff, parseDifficulty(query.data.bestDiff)),
           bestSessionDiff: Math.max(acc.bestSessionDiff, parseDifficulty(query.data.bestSessionDiff)),
@@ -89,7 +88,6 @@ const SwarmDashboard: React.FC = () => {
 
       // Calculate averages for relevant fields
       combined.temp /= validQueries.length;
-      combined.frequency /= validQueries.length;
       combined.smallCoreCount /= validQueries.length;
       combined.asicCount /= validQueries.length;
 
