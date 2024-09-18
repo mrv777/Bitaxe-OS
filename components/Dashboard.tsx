@@ -1,41 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "../lib/api";
-import LocalDashboard from "./LocalDashboard";
-import SwarmDashboard from "./SwarmDashboard";
+import React from "react";
 import Header from "./Header";
 import Settings from "./Settings";
 import ApiUrlForm from "./ApiUrlForm";
-import { DashboardData } from "../types";
+import TabNavigation from "./TabNavigation";
+import LocalDashboard from "./LocalDashboard";
+import SwarmDashboard from "./SwarmDashboard";
+import { useDashboardData } from "../hooks/useDashboardData";
+import { useActiveTab } from "../hooks/useActiveTab";
 
 const Dashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'local' | 'swarm' | 'settings'>('local');
-  const [apiUrl, setApiUrl] = useState<string | null>(null);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
-
-  useEffect(() => {
-    const savedApiUrl = localStorage.getItem('bitaxeApiUrl');
-    if (savedApiUrl) {
-      setApiUrl(savedApiUrl);
-    } else {
-      setIsFirstLoad(false); // Add this line
-    }
-  }, []);
-
-  const { data, isLoading, error, refetch } = useQuery<DashboardData>({
-    queryKey: ["allStatus"],
-    queryFn: () => api.getAllStatus(),
-    refetchInterval: 10000,
-    enabled: !!apiUrl,
-    onSettled: () => setIsFirstLoad(false),
-  });
-
-  const handleApiUrlSubmit = () => {
-    setApiUrl(localStorage.getItem('bitaxeApiUrl'));
-    refetch();
-  };
+  const { data, isLoading, error, isFirstLoad, apiUrl, handleApiUrlSubmit } = useDashboardData();
+  const { activeTab, setActiveTab } = useActiveTab();
 
   if (isLoading && isFirstLoad) return <div>Loading dashboard...</div>;
 
@@ -57,21 +34,7 @@ const Dashboard: React.FC = () => {
         <Settings data={data} />
       ) : (
         <>
-          <div className="tabs tabs-boxed mb-4">
-            <button
-              className={`tab ${activeTab === 'local' ? 'tab-active' : ''}`}
-              onClick={() => setActiveTab('local')}
-            >
-              Local
-            </button>
-            <button
-              className={`tab ${activeTab === 'swarm' ? 'tab-active' : ''}`}
-              onClick={() => setActiveTab('swarm')}
-            >
-              Swarm
-            </button>
-          </div>
-
+          <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
           {activeTab === 'local' ? (
             <LocalDashboard data={data} />
           ) : (

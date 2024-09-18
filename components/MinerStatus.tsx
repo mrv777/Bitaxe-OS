@@ -8,6 +8,20 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+// Add this utility function at the top of the file
+const formatDifficulty = (value: number): string => {
+  const suffixes = ['', 'k', 'M', 'G', 'T', 'P', 'E'];
+  let suffixIndex = 0;
+
+  while (value >= 1000 && suffixIndex < suffixes.length - 1) {
+    value /= 1000;
+    suffixIndex++;
+  }
+
+  const formattedValue = parseFloat(value.toFixed(1)).toString();
+  return formattedValue + ' ' + suffixes[suffixIndex];
+};
+
 interface MinerStatusProps {
   data: {
     hashRate: number;
@@ -20,6 +34,8 @@ interface MinerStatusProps {
     power: number;
     hostname: string;
     stratumUser: string;
+    bestDiff: number;
+    bestSessionDiff: number;
   };
   hideTemp?: boolean;
   showDiff?: boolean;
@@ -130,6 +146,15 @@ const MinerStatus: React.FC<MinerStatusProps> = ({
     <div className="card bg-base-300 shadow-xl">
       <div className="card-body">
         <div className="stats stats-vertical lg:stats-horizontal shadow">
+        {showDiff ? (
+          <div className="stat">
+            <div className="stat-title">Best Difficulty</div>
+            <div className="stat-value">{formatDifficulty(data.bestDiff)}</div>
+            <div className="stat-desc">
+              This session: {formatDifficulty(data.bestSessionDiff)}
+            </div>
+          </div>
+        ) : (
           <div className="stat">
             <div className="stat-title">Hashrate</div>
             <div className="stat-value">{formatHashrate(data.hashRate)}</div>
@@ -137,6 +162,7 @@ const MinerStatus: React.FC<MinerStatusProps> = ({
               {((data.power / data.hashRate) * 1000).toFixed(2)} J/Th
             </div>
           </div>
+        )}
           <div className="stat">
             <div className="stat-title">Avg Hashrate</div>
             <div className="stat-value">

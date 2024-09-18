@@ -32,6 +32,20 @@ const SwarmDashboard: React.FC = () => {
     })),
   });
 
+  const parseDifficulty = (diffString: string): number => {
+    const match = diffString.match(/^(\d+(\.\d+)?)\s*([EPMGTK]?)$/i);
+    if (!match) return 0;
+
+    const [, value, , suffix] = match;
+    const numericValue = parseFloat(value);
+
+    const multipliers: { [key: string]: number } = {
+      'E': 1e18, 'P': 1e15, 'T': 1e12, 'G': 1e9, 'M': 1e6, 'K': 1e3
+    };
+
+    return numericValue * (multipliers[suffix.toUpperCase()] || 1);
+  };
+
   const combinedData = React.useMemo(() => {
     const validQueries = statusQueries.filter((query) => query.data);
     if (validQueries.length > 0) {
@@ -39,8 +53,8 @@ const SwarmDashboard: React.FC = () => {
         (acc, query) => ({
           ...acc,
           hashRate: acc.hashRate + query.data.hashRate,
-          bestDiff: Math.max(acc.bestDiff, query.data.bestDiff),
-          bestSessionDiff: Math.max(acc.bestSessionDiff, query.data.bestSessionDiff),
+          bestDiff: Math.max(acc.bestDiff, parseDifficulty(query.data.bestDiff)),
+          bestSessionDiff: Math.max(acc.bestSessionDiff, parseDifficulty(query.data.bestSessionDiff)),
           temp: acc.temp + query.data.temp,
           sharesAccepted: acc.sharesAccepted + query.data.sharesAccepted,
           sharesRejected: acc.sharesRejected + query.data.sharesRejected,
@@ -110,8 +124,11 @@ const SwarmDashboard: React.FC = () => {
           <MinerStatus
             data={{
               ...combinedData,
+              bestDiff: combinedData.bestDiff.toFixed(2),
+              bestSessionDiff: combinedData.bestSessionDiff.toFixed(2),
             }}
             hideTemp={true}
+            showDiff={true}
           />
         </div>
       )}
@@ -178,8 +195,7 @@ const SwarmDashboard: React.FC = () => {
                 {query.data?.ASICModel || "N/A"}
               </td>
               <td className={visibleColumns.bestDiff ? "" : "hidden"}>
-                {query.data?.bestDiff ? query.data?.bestDiff : "N/A"} (
-                {query.data?.bestSessionDiff ? query.data?.bestSessionDiff : "N/A"})
+                {query.data?.bestDiff || "N/A"} ({query.data?.bestSessionDiff || "N/A"})
               </td>
               <td className={visibleColumns.hashRate ? "" : "hidden"}>
                 {query.data?.hashRate.toFixed(2)} Gh/s
