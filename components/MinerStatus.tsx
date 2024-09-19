@@ -34,8 +34,8 @@ interface MinerStatusProps {
     power: number;
     hostname: string;
     stratumUser: string;
-    bestDiff: number;
-    bestSessionDiff: number;
+    bestDiff: number | string;
+    bestSessionDiff: number | string;
   };
   hideTemp?: boolean;
   showDiff?: boolean;
@@ -149,9 +149,11 @@ const MinerStatus: React.FC<MinerStatusProps> = ({
         {showDiff ? (
           <div className="stat">
             <div className="stat-title">Best Difficulty</div>
-            <div className="stat-value">{formatDifficulty(data.bestDiff)}</div>
+            <div className="stat-value">
+              {typeof data.bestDiff === 'number' ? formatDifficulty(data.bestDiff) : data.bestDiff}
+            </div>
             <div className="stat-desc">
-              This session: {formatDifficulty(data.bestSessionDiff)}
+              This session: {typeof data.bestSessionDiff === 'number' ? formatDifficulty(data.bestSessionDiff) : data.bestSessionDiff}
             </div>
           </div>
         ) : (

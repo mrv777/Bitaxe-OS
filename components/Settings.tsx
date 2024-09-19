@@ -46,7 +46,7 @@ const Settings: React.FC<SettingsProps> = ({ data }) => {
   const successModalRef = useRef<HTMLDialogElement>(null);
   const errorModalRef = useRef<HTMLDialogElement>(null);
 
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
     const frequencyOptions = getOptions("frequency");
@@ -90,11 +90,16 @@ const Settings: React.FC<SettingsProps> = ({ data }) => {
       if (response.ok) {
         successModalRef.current?.showModal();
       } else {
-        throw new Error(await response.text() || 'Failed to update settings. Please try again.');
+        throw new Error(
+          (await response.text()) ||
+            "Failed to update settings. Please try again."
+        );
       }
     } catch (error) {
       errorModalRef.current?.showModal();
-      setErrorMessage(error instanceof Error ? error.message : 'An unknown error occurred');
+      setErrorMessage(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
     }
   };
 
@@ -173,7 +178,15 @@ const Settings: React.FC<SettingsProps> = ({ data }) => {
                 {/* Stratum URL input */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Stratum URL</span>
+                    <span className="label-text">
+                      Stratum URL
+                      <span
+                        className="tooltip tooltip-right ml-1 border-b border-dotted border-current"
+                        data-tip="URL of the pool you want to mine on"
+                      >
+                        (?)
+                      </span>
+                    </span>
                   </label>
                   <input
                     type="text"
@@ -199,7 +212,15 @@ const Settings: React.FC<SettingsProps> = ({ data }) => {
                 {/* Stratum User input */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Stratum User</span>
+                    <span className="label-text">
+                      Stratum User
+                      <span
+                        className="tooltip tooltip-right ml-1 border-b border-dotted border-current"
+                        data-tip="This is typically the bitcoin address you want rewards to go to"
+                      >
+                        (?)
+                      </span>
+                    </span>
                   </label>
                   <input
                     type="text"
@@ -353,7 +374,9 @@ const Settings: React.FC<SettingsProps> = ({ data }) => {
       <dialog ref={errorModalRef} className="modal">
         <div className="modal-box">
           <h3 className="font-bold text-lg">Error</h3>
-          <p className="py-4">{errorMessage || 'Failed to update settings. Please try again.'}</p>
+          <p className="py-4">
+            {errorMessage || "Failed to update settings. Please try again."}
+          </p>
           <div className="modal-action">
             <form method="dialog">
               <button className="btn btn-primary">Close</button>

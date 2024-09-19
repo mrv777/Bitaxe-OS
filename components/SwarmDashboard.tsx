@@ -40,7 +40,12 @@ const SwarmDashboard: React.FC = () => {
     const numericValue = parseFloat(value);
 
     const multipliers: { [key: string]: number } = {
-      'E': 1e18, 'P': 1e15, 'T': 1e12, 'G': 1e9, 'M': 1e6, 'K': 1e3
+      E: 1e18,
+      P: 1e15,
+      T: 1e12,
+      G: 1e9,
+      M: 1e6,
+      K: 1e3,
     };
 
     return numericValue * (multipliers[suffix.toUpperCase()] || 1);
@@ -52,8 +57,14 @@ const SwarmDashboard: React.FC = () => {
       const combined = validQueries.reduce(
         (acc, query) => ({
           hashRate: acc.hashRate + query.data.hashRate,
-          bestDiff: Math.max(acc.bestDiff, parseDifficulty(query.data.bestDiff)),
-          bestSessionDiff: Math.max(acc.bestSessionDiff, parseDifficulty(query.data.bestSessionDiff)),
+          bestDiff: Math.max(
+            acc.bestDiff,
+            parseDifficulty(query.data.bestDiff)
+          ),
+          bestSessionDiff: Math.max(
+            acc.bestSessionDiff,
+            parseDifficulty(query.data.bestSessionDiff)
+          ),
           temp: acc.temp + query.data.temp,
           sharesAccepted: acc.sharesAccepted + query.data.sharesAccepted,
           sharesRejected: acc.sharesRejected + query.data.sharesRejected,
@@ -122,8 +133,8 @@ const SwarmDashboard: React.FC = () => {
           <MinerStatus
             data={{
               ...combinedData,
-              bestDiff: combinedData.bestDiff.toFixed(2),
-              bestSessionDiff: combinedData.bestSessionDiff.toFixed(2),
+              bestDiff: combinedData.bestDiff,
+              bestSessionDiff: combinedData.bestSessionDiff,
             }}
             hideTemp={true}
             showDiff={true}
@@ -193,7 +204,10 @@ const SwarmDashboard: React.FC = () => {
                 {query.data?.ASICModel || "N/A"}
               </td>
               <td className={visibleColumns.bestDiff ? "" : "hidden"}>
-                {query.data?.bestDiff || "N/A"} ({query.data?.bestSessionDiff || "N/A"})
+                {query.data?.bestSessionDiff || "N/A"}{" "}
+                <span className="tooltip cursor-help" data-tip="All Time">
+                  ({query.data?.bestDiff || "N/A"})
+                </span>
               </td>
               <td className={visibleColumns.hashRate ? "" : "hidden"}>
                 {query.data?.hashRate.toFixed(2)} Gh/s
