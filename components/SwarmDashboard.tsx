@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import React, { useState, useCallback } from "react";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import MinerStatus from "./MinerStatus";
+import AddToSwarmForm from "./AddToSwarmForm"
+
+// Memoize the MinerStatus component
+const MemoizedMinerStatus = React.memo(MinerStatus);
 
 interface SwarmMember {
   ip: string;
@@ -18,6 +22,8 @@ const SwarmDashboard: React.FC = () => {
     queryKey: ["getSwarm"],
     queryFn: () => api.getSwarm(undefined),
   });
+
+  const queryClient = useQueryClient();
 
   const uniqueIps = React.useMemo(() => {
     if (!swarmData) return [];
@@ -116,10 +122,38 @@ const SwarmDashboard: React.FC = () => {
     frequency: true,
     voltage: true,
     power: true,
+    delete: true,
   });
 
   const toggleColumn = (column: keyof typeof visibleColumns) => {
     setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
+  };
+
+  const addToSwarm = useCallback(async (newIp: string) => {
+    if (newIp && swarmData) {
+      try {
+        const updatedSwarm = [
+          ...swarmData,
+          { ip: newIp }
+        ];
+        await api.updateSwarm(updatedSwarm);
+        await queryClient.invalidateQueries();
+      } catch (error) {
+        console.error("Failed to add to swarm:", error);
+      }
+    }
+  }, [swarmData, queryClient]);
+
+  const removeFromSwarm = async (ip: string) => {
+    try {
+      const updatedSwarm = swarmData.filter(member => member.ip !== ip);
+      await api.updateSwarm(updatedSwarm);
+      // Refetch swarm data
+      await queryClient.invalidateQueries();
+    } catch (error) {
+      console.error("Failed to remove from swarm:", error);
+      // Handle error (e.g., show an error message to the user)
+    }
   };
 
   if (swarmLoading) return <div>Loading swarm data...</div>;
@@ -130,7 +164,7 @@ const SwarmDashboard: React.FC = () => {
       {combinedData && (
         <div>
           <h2 className="text-2xl font-bold">Combined Miner Status</h2>
-          <MinerStatus
+          <MemoizedMinerStatus
             data={{
               ...combinedData,
               bestDiff: combinedData.bestDiff,
@@ -141,7 +175,7 @@ const SwarmDashboard: React.FC = () => {
           />
         </div>
       )}
-
+      <div className="divider" />
       <div className="flex justify-end mb-4">
         <div className="dropdown mb-4">
           <label tabIndex={0} className="btn m-1">
@@ -189,6 +223,7 @@ const SwarmDashboard: React.FC = () => {
             </th>
             <th className={visibleColumns.voltage ? "" : "hidden"}>Voltage</th>
             <th className={visibleColumns.power ? "" : "hidden"}>Power</th>
+            <th className={visibleColumns.delete ? "" : "hidden"}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -236,23 +271,22 @@ const SwarmDashboard: React.FC = () => {
               <td className={visibleColumns.power ? "" : "hidden"}>
                 {query.data?.power.toFixed(2)}W
               </td>
+              <td className={visibleColumns.delete ? "" : "hidden"}>
+                <button
+                  onClick={() => removeFromSwarm(uniqueIps[index])}
+                  className="btn btn-error btn-xs"
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* {statusQueries.map((query, index) => (
-        <div key={uniqueIps[index]}>
-          <h3>IP: {uniqueIps[index]}</h3>
-          {query.isLoading ? (
-            <p>Loading status...</p>
-          ) : query.error ? (
-            <p>Error loading status</p>
-          ) : (
-            <MinerStatus data={query.data} hideTemp={true} />
-          )}
-        </div>
-      ))} */}
+      <div className="mt-4">
+        <AddToSwarmForm onSubmit={addToSwarm} />
+      </div>
     </div>
   );
 };

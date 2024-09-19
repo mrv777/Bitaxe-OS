@@ -51,4 +51,15 @@ export const api = {
     });
     return response.json();
   },
+
+  async updateSwarm(data: { ip: string }[], baseUrl?: string) {
+    const url = CheckApiUrl(baseUrl);
+    const response = await fetch(`${url}/swarm`, {
+      method: "PATCH",
+      headers: { ...defaultHeaders, "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return response;
+  },
+
 };
