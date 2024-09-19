@@ -58,9 +58,9 @@ const SwarmDashboard: React.FC = () => {
   };
 
   const combinedData = React.useMemo(() => {
-    const validQueries = statusQueries.filter((query) => query.data);
-    if (validQueries.length > 0) {
-      const combined = validQueries.reduce(
+    // Only proceed if we have data from all miners
+    if (statusQueries.every(query => query.data)) {
+      const combined = statusQueries.reduce(
         (acc, query) => ({
           hashRate: acc.hashRate + query.data.hashRate,
           bestDiff: Math.max(
@@ -104,9 +104,12 @@ const SwarmDashboard: React.FC = () => {
       );
 
       // Calculate averages for relevant fields
-      combined.temp /= validQueries.length;
-      combined.smallCoreCount /= validQueries.length;
-      combined.asicCount /= validQueries.length;
+      const queryCount = statusQueries.length;
+      combined.temp /= queryCount;
+      combined.smallCoreCount /= queryCount;
+      combined.asicCount /= queryCount;
+
+      combined.hashRate = combined.hashRate > 0 ? combined.hashRate : null;
 
       return combined;
     }
@@ -161,7 +164,7 @@ const SwarmDashboard: React.FC = () => {
 
   return (
     <div>
-      {combinedData && (
+      {combinedData ? (
         <div>
           <h2 className="text-2xl font-bold">Combined Miner Status</h2>
           <MemoizedMinerStatus
@@ -173,6 +176,11 @@ const SwarmDashboard: React.FC = () => {
             hideTemp={true}
             showDiff={true}
           />
+        </div>
+      ) : (
+        <div className="text-center py-4">
+          <h2 className="text-2xl font-bold">Combined Miner Status</h2>
+          <p>Waiting for data from all miners...</p>
         </div>
       )}
       <div className="divider" />
