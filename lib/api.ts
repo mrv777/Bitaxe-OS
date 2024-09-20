@@ -3,9 +3,6 @@ const defaultHeaders = {
   Connection: "keep-alive",
 };
 
-// This will use the proxy to access the Bitaxe API
-const BASE_URL = '/api/proxy?url=';
-
 const CheckApiUrl = (baseUrl?: string) => {
   let correctedUrl = baseUrl || localStorage.getItem("bitaxeApiUrl");
   if (!correctedUrl.startsWith("http://")) {
@@ -20,16 +17,16 @@ const CheckApiUrl = (baseUrl?: string) => {
 export const api = {
   async getAllStatus(baseUrl?: string) {
     const url = CheckApiUrl(baseUrl);
-    const response = await fetch(`${BASE_URL}${encodeURIComponent(`${url}/system/info`)}`);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    const response = await fetch(`${url}/system/info`, {
+      method: "GET",
+      headers: defaultHeaders,
+    });
     return response.json();
   },
 
   async getSwarm(baseUrl?: string) {
     const url = CheckApiUrl(baseUrl);
-    const response = await fetch(`${BASE_URL}${encodeURIComponent(`${url}/swarm/info`)}`, {
+    const response = await fetch(`${url}/swarm/info`, {
       method: "GET",
       headers: defaultHeaders,
     });
@@ -38,7 +35,7 @@ export const api = {
 
   async updateSettings(settings: any, baseUrl?: string) {
     const url = CheckApiUrl(baseUrl);
-    const response = await fetch(`${BASE_URL}${encodeURIComponent(`${url}/system`)}`, {
+    const response = await fetch(`${url}/system`, {
       method: "PATCH",
       headers: { ...defaultHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(settings),
@@ -48,7 +45,7 @@ export const api = {
 
   async restartSystem(baseUrl?: string) {
     const url = CheckApiUrl(baseUrl);
-    const response = await fetch(`${BASE_URL}${encodeURIComponent(`${url}/system/restart`)}`, {
+    const response = await fetch(`${url}/system/restart`, {
       method: "POST",
       headers: defaultHeaders,
     });
@@ -57,11 +54,12 @@ export const api = {
 
   async updateSwarm(data: { ip: string }[], baseUrl?: string) {
     const url = CheckApiUrl(baseUrl);
-    const response = await fetch(`${BASE_URL}${encodeURIComponent(`${url}/swarm`)}`, {
+    const response = await fetch(`${url}/swarm`, {
       method: "PATCH",
       headers: { ...defaultHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
     return response;
   },
+
 };
